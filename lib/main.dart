@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gesture_app/gesturing.dart';
+import 'package:gesture_app/EffectsHome.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const gesturing(),
+      home: const EffectsHome(),
     );
   }
 }

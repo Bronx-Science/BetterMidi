@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: MyDragAndDropApp(),
     );
   }
 }
 
 class MyDragAndDropApp extends StatefulWidget {
+  const MyDragAndDropApp({super.key});
+
   @override
   _MyDragAndDropAppState createState() => _MyDragAndDropAppState();
 }
 
 class _MyDragAndDropAppState extends State<MyDragAndDropApp> {
-  Offset buttonPosition = Offset(0, 0);
+  Offset buttonPosition = const Offset(0, 0);
 
   Color myColor = Colors.red;
 
@@ -27,7 +31,7 @@ class _MyDragAndDropAppState extends State<MyDragAndDropApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Drag and Drop with Button'),
+        title: const Text('Drag and Drop with Button'),
       ),
       body: Stack(
         children: <Widget>[
@@ -83,13 +87,13 @@ class _MyDragAndDropAppState extends State<MyDragAndDropApp> {
                   '${buttonPosition.dx},${buttonPosition.dy}', // Use current buttonPosition as data.
               child: ElevatedButton(
                 onPressed: () {},
-                child: Text('bruh'),
+                child: const Text('bruh'),
               ),
               feedback: Container(
                 width: 50,
                 height: 50,
                 color: Colors.blue.withOpacity(0.5),
-                child: Center(
+                child: const Center(
                   child: Text('Button'),
                 ),
               ),
@@ -103,7 +107,7 @@ class _MyDragAndDropAppState extends State<MyDragAndDropApp> {
               width: 50,
               height: 50,
               color: Colors.blue,
-              child: Center(
+              child: const Center(
                 child: Text('Button'),
               ),
             ),
