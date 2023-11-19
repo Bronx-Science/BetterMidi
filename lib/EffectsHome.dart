@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer';
+import 'package:audioplayers/audioplayers.dart';
 
 class EffectsHome extends StatefulWidget {
   const EffectsHome({Key? key}) : super(key: key);
@@ -11,7 +12,8 @@ class EffectsHome extends StatefulWidget {
 class _EffectsHomeState extends State<EffectsHome> {
   bool dropDown = false;
   List<Instrument> placedItems = [];
-  Offset tempOffsetHolder = const Offset(0, 0);
+  late Offset tempOffsetHolder;
+  late int alreadyPlacedIndex;
 
   Color c = Colors.yellow;
 
@@ -45,99 +47,112 @@ class _EffectsHomeState extends State<EffectsHome> {
               height: dropDown ? 200 : 0,
               child: Row(
                 children: [
-                  Draggable<Instrument>(
-                    // dragAnchorStrategy:
-                    //     (Draggable<Object> _, BuildContext __, Offset ___) =>
-                    //         const Offset(0, 0),
-                    // feedback: Container(
-                    //     alignment: Alignment.center,
-                    //     child: Icon(Icons.arrow_downward_sharp)),
-                    feedback: Opacity(
-                      opacity: 0.5,
-                      child: Instrument(type: 1),
-                    ),
-                    data: Instrument(type: 1, position: tempOffsetHolder),
-                    child: Instrument(type: 1),
-                    onDragEnd: (dragDetails) {
-                      setState(() {
-                        tempOffsetHolder = Offset(
-                            dragDetails.offset.dx, dragDetails.offset.dy);
-                      });
-                    },
-                  ),
-                  Draggable<Instrument>(
-                    // dragAnchorStrategy:
-                    //     (Draggable<Object> _, BuildContext __, Offset ___) =>
-                    //         const Offset(0, 0),
-                    // feedback: Container(
-                    //     alignment: Alignment.center,
-                    //     child: Icon(Icons.arrow_downward_sharp)),
-                    feedback: Opacity(
-                      opacity: 0.5,
-                      child: Instrument(type: 1),
-                    ),
-                    data: Instrument(type: 1, position: tempOffsetHolder),
-                    child: Instrument(type: 1),
-                    onDragEnd: (dragDetails) {
-                      setState(() {
-                        tempOffsetHolder = Offset(
-                            dragDetails.offset.dx, dragDetails.offset.dy);
-                      });
-                    },
-                  ),
+                  draggableInstrument(1),
+                  draggableInstrument(1),
                 ],
               ),
             ),
             Expanded(
-              child: InkWell(
-                splashColor: Colors.green,
-                child: DragTarget<Instrument>(
-                  builder: (BuildContext context, List<Instrument?> incoming,
-                      List rejected) {
-                    return Container(
-                        alignment: Alignment.topCenter,
-                        color: c,
-                        child: Stack(
-                          children: placedItems.map((e) {
-                            return Positioned(
-                              child: e,
-                              left: e.position!.dx,
-                              top: e.position!.dy - 370,
-                            );
-                          }).toList(),
-                        ));
-                  },
-                  onWillAccept: (data) {
-                    return true;
-                  },
-                  onAccept: (data) {
-                    log(data.position.toString());
-                    log(placedItems.map((e) => e.position).toString());
-                    setState(() {
-                      c = Colors.blue;
-                      placedItems.add(data);
-                    });
-                  },
-                ),
-              ),
+              child: MusicBody(context),
             ),
           ],
         ));
   }
+
+  Draggable<Instrument> draggableInstrument(int type) {
+    return Draggable<Instrument>(
+      feedback: Opacity(
+        opacity: 0.5,
+        child: Instrument(type: type),
+      ),
+      data: Instrument(type: type),
+      child: Instrument(type: type),
+      onDragEnd: (dragDetails) {
+        setState(() {
+          tempOffsetHolder =
+              Offset(dragDetails.offset.dx, dragDetails.offset.dy);
+          if (dropDown) {
+            placedItems[placedItems.length - 1].position = tempOffsetHolder;
+          }
+        });
+      },
+    );
+  }
+
+  InkWell MusicBody(BuildContext context) {
+    return InkWell(
+      splashColor: Colors.green,
+      child: GestureDetector(
+        onTap: () {
+          log('happened');
+          final player = AudioPlayer();
+          player.play(source)
+        },
+        child: DragTarget<Instrument>(
+          builder: (BuildContext context, List<Instrument?> incoming,
+              List rejected) {
+            return Container(
+                alignment: Alignment.topCenter,
+                color: c,
+                child: Stack(
+                  children: placedItems.map((e) {
+                    return Positioned(
+                      left: e.position!.dx,
+                      top: e.position!.dy - (dropDown ? 370 : 170),
+                      child: Draggable<Instrument>(
+                        feedback: Opacity(
+                          opacity: 0.5,
+                          child: e,
+                        ),
+                        data: e,
+                        child: e,
+                        onDragEnd: (dragDetails) {
+                          setState(() {
+                            tempOffsetHolder = Offset(
+                                dragDetails.offset.dx, dragDetails.offset.dy);
+                            placedItems[alreadyPlacedIndex]
+                                .setPosition(tempOffsetHolder);
+                            log(placedItems[alreadyPlacedIndex]
+                                .index
+                                .toString());
+                            log(placedItems.map((e) => e.position).toString());
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ));
+          },
+          onWillAccept: (data) {
+            return true;
+          },
+          onAccept: (data) {
+            if (data.index == null) {
+              data.setIndex(placedItems.length);
+              log(data.index.toString());
+              setState(() {
+                c = Colors.blue;
+                placedItems.add(data);
+              });
+              log(placedItems.map((e) => e.position).toString());
+            } else {
+              alreadyPlacedIndex = data.index!;
+            }
+          },
+        ),
+      ),
+    );
+  }
 }
 
-class Instrument extends StatefulWidget {
+class Instrument extends StatelessWidget {
   Instrument({required this.type, this.position, super.key});
 
   final int type;
   final Map<int, String> list = {};
-  final Offset? position;
+  Offset? position;
+  int? index;
 
-  @override
-  State<Instrument> createState() => _InstrumentState();
-}
-
-class _InstrumentState extends State<Instrument> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -163,4 +178,51 @@ class _InstrumentState extends State<Instrument> {
           ),
         ));
   }
+
+  void setPosition(Offset p) {
+    position = p;
+  }
+
+  void setIndex(int idx) {
+    index = idx;
+  }
 }
+
+// class Instrument extends StatefulWidget {
+//   Instrument({required this.type, this.position, super.key});
+
+//   final int type;
+//   final Map<int, String> list = {};
+//   final Offset? position;
+
+//   @override
+//   State<Instrument> createState() => _InstrumentState();
+// }
+
+// class _InstrumentState extends State<Instrument> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//         alignment: Alignment.center,
+//         height: 200,
+//         width: 200,
+//         decoration: BoxDecoration(
+//           borderRadius: BorderRadius.circular(20),
+//           color: Colors.amber,
+//         ),
+//         child: Container(
+//           height: 180,
+//           width: 180,
+//           child: ElevatedButton(
+//             onPressed: () {},
+//             child: Text('asd'),
+//             style: ElevatedButton.styleFrom(
+//               shape: const CircleBorder(),
+//               padding: const EdgeInsets.all(20),
+//               backgroundColor: Colors.blue, // <-- Button color
+//               foregroundColor: Colors.red, // <-- Splash color
+//             ),
+//           ),
+//         ));
+//   }
+// }
