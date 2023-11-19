@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer';
 
 class EffectsHome extends StatefulWidget {
   const EffectsHome({Key? key}) : super(key: key);
@@ -9,6 +10,10 @@ class EffectsHome extends StatefulWidget {
 
 class _EffectsHomeState extends State<EffectsHome> {
   bool dropDown = false;
+  List<Instrument> placedItems = [];
+  Offset tempOffsetHolder = const Offset(0, 0);
+
+  Color c = Colors.yellow;
 
   @override
   Widget build(BuildContext context) {
@@ -37,25 +42,83 @@ class _EffectsHomeState extends State<EffectsHome> {
                   ],
                 )),
             Container(
-                height: dropDown ? 200 : 0,
-                child: const Row(
-                  children: [
-                    Instrument(),
-                  ],
-                )),
-            InkWell(
-              splashColor: Colors.green,
-              child: DragTarget<String>(
-                builder: (BuildContext context, List<String?> incoming,
-                    List rejected) {
-                  return Container(
-                    color: Colors.yellow,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: Text('asdas'),
+              height: dropDown ? 200 : 0,
+              child: Row(
+                children: [
+                  Draggable<Instrument>(
+                    // dragAnchorStrategy:
+                    //     (Draggable<Object> _, BuildContext __, Offset ___) =>
+                    //         const Offset(0, 0),
+                    // feedback: Container(
+                    //     alignment: Alignment.center,
+                    //     child: Icon(Icons.arrow_downward_sharp)),
+                    feedback: Opacity(
+                      opacity: 0.5,
+                      child: Instrument(type: 1),
                     ),
-                  );
-                },
+                    data: Instrument(type: 1, position: tempOffsetHolder),
+                    child: Instrument(type: 1),
+                    onDragEnd: (dragDetails) {
+                      setState(() {
+                        tempOffsetHolder = Offset(
+                            dragDetails.offset.dx, dragDetails.offset.dy);
+                      });
+                    },
+                  ),
+                  Draggable<Instrument>(
+                    // dragAnchorStrategy:
+                    //     (Draggable<Object> _, BuildContext __, Offset ___) =>
+                    //         const Offset(0, 0),
+                    // feedback: Container(
+                    //     alignment: Alignment.center,
+                    //     child: Icon(Icons.arrow_downward_sharp)),
+                    feedback: Opacity(
+                      opacity: 0.5,
+                      child: Instrument(type: 1),
+                    ),
+                    data: Instrument(type: 1, position: tempOffsetHolder),
+                    child: Instrument(type: 1),
+                    onDragEnd: (dragDetails) {
+                      setState(() {
+                        tempOffsetHolder = Offset(
+                            dragDetails.offset.dx, dragDetails.offset.dy);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: InkWell(
+                splashColor: Colors.green,
+                child: DragTarget<Instrument>(
+                  builder: (BuildContext context, List<Instrument?> incoming,
+                      List rejected) {
+                    return Container(
+                        alignment: Alignment.topCenter,
+                        color: c,
+                        child: Stack(
+                          children: placedItems.map((e) {
+                            return Positioned(
+                              child: e,
+                              left: e.position!.dx,
+                              top: e.position!.dy - 370,
+                            );
+                          }).toList(),
+                        ));
+                  },
+                  onWillAccept: (data) {
+                    return true;
+                  },
+                  onAccept: (data) {
+                    log(data.position.toString());
+                    log(placedItems.map((e) => e.position).toString());
+                    setState(() {
+                      c = Colors.blue;
+                      placedItems.add(data);
+                    });
+                  },
+                ),
               ),
             ),
           ],
@@ -64,7 +127,11 @@ class _EffectsHomeState extends State<EffectsHome> {
 }
 
 class Instrument extends StatefulWidget {
-  const Instrument({super.key});
+  Instrument({required this.type, this.position, super.key});
+
+  final int type;
+  final Map<int, String> list = {};
+  final Offset? position;
 
   @override
   State<Instrument> createState() => _InstrumentState();
