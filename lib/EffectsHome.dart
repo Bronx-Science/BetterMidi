@@ -86,7 +86,7 @@ class _EffectsHomeState extends State<EffectsHome> {
         onTap: () {
           log('happened');
           final player = AudioPlayer();
-          player.play(source)
+          player.play(AssetSource('audio/bass_drum_hit.mp3'));
         },
         child: DragTarget<Instrument>(
           builder: (BuildContext context, List<Instrument?> incoming,
