@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   audioplayers: ^5.2.1
+  shake: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +22,4 @@ flutter:
 
   assets:
     - assets/audio/
+    - assets/images/
